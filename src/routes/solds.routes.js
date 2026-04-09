@@ -3,6 +3,6 @@ import { createSale } from '../controllers/solds.controller.js';
 
 const router = Router();
 
-router.post('/', createSale);
+router.post('/create', createSale);
 
 export default router;
