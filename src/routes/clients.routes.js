@@ -3,6 +3,6 @@ import { getClientsWithCreditInfo } from '../controllers/clients.controller.js';
 
 const router = Router();
 
-router.get('/clientsCreditInfo', getClientsWithCreditInfo);
+router.get('/credits', getClientsWithCreditInfo);
 
 export default router;

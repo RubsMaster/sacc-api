@@ -15,10 +15,10 @@ const dbSettings = {
 export const getConnection = async () => {
   try {
     const pool = await sql.connect(dbSettings);
-    console.log('✅ Conexión a la base de datos SQL Server exitosa');
+    console.log('Conexión a la base de datos SQL Server exitosa');
     return pool;
   } catch (error) {
-    console.error('❌ Error conectando a la base de datos:', error.message);
+    console.error('Error conectando a la base de datos:', error.message);
     process.exit(1); 
   }
 };
