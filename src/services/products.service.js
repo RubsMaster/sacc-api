@@ -11,7 +11,7 @@ export const findProductByID = async (id) => {
 };
 
 export const createProduct = async (pool, transaction, producto) => {
-  await pool
+  const result = await pool
     .request(transaction)
     .input("ID_PRODUCTO", sql.VarChar, producto.ID_PRODUCTO)
     .input("DESCRIPCION", sql.VarChar, producto.DESCRIPCION)
@@ -31,6 +31,11 @@ export const createProduct = async (pool, transaction, producto) => {
     .input("IMPUESTO1", sql.Float, 0)
     .input("IMPUESTO2", sql.Float, 0)
     .input("RETENCION", sql.Float, 0)
+    .input("C_MAXIMA", sql.Float, 0)
+    .input("C_MINIMA", sql.Float, 0)
+    .input("ID_DESCUENTO", sql.VarChar, "0")
+    .input("MATERIAL", sql.VarChar, "<NINGUNO>")
+    .input("COLOR", sql.VarChar, "<NINGUNO>")
     .input("PEDIDO_SUCURSAL", sql.Char, "S")
     .input("CONTROLA_EXISTENCIA", sql.Char, "S")
     .query(`
@@ -38,12 +43,15 @@ export const createProduct = async (pool, transaction, producto) => {
         ID_PRODUCTO, DESCRIPCION, TIPO, VENTA_WEB, MARCA,
         GANANCIA, PRECIO_COSTO, CLASIFICACION, PRECIO_EN, USR_ALTA,
         FECHA_ALTA, CATEGORIA, PRESENTACION, P_RETENCION, IVA,
-        IMPUESTO1, IMPUESTO2, RETENCION, PEDIDO_SUCURSAL, CONTROLA_EXISTENCIA
+        IMPUESTO1, IMPUESTO2, RETENCION, PEDIDO_SUCURSAL, CONTROLA_EXISTENCIA,
+        C_MINIMA, C_MAXIMA, ID_DESCUENTO, MATERIAL, COLOR
       ) VALUES (
         @ID_PRODUCTO, @DESCRIPCION, @TIPO, @VENTA_WEB, @MARCA,
         @GANANCIA, @PRECIO_COSTO, @CLASIFICACION, @PRECIO_EN, @USR_ALTA,
         @FECHA_ALTA, @CATEGORIA, @PRESENTACION, @P_RETENCION, @IVA,
-        @IMPUESTO1, @IMPUESTO2, @RETENCION, @PEDIDO_SUCURSAL, @CONTROLA_EXISTENCIA
+        @IMPUESTO1, @IMPUESTO2, @RETENCION, @PEDIDO_SUCURSAL, @CONTROLA_EXISTENCIA,
+        @C_MINIMA, @C_MAXIMA, @ID_DESCUENTO, @MATERIAL, @COLOR
       )
     `);
+    return result
 };

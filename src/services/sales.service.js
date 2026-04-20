@@ -49,10 +49,10 @@ export const insertSaleDetails = async (
   productos,
 ) => {
   for (const producto of productos) {
-    const existe = await findProductByID(producto.ID_PRODUCTO);
+    let existe = await findProductByID(producto.ID_PRODUCTO);
 
     if (!existe) {
-      await createProduct(pool, transaction, producto);
+      existe = await createProduct(pool, transaction, producto);
     }
 
     await pool
@@ -69,10 +69,11 @@ export const insertSaleDetails = async (
       .input("impuesto1", sql.Decimal(10, 2), 0)
       .input("impuesto2", sql.Decimal(10, 2), 0)
       .input("retencion", sql.Decimal(10, 2), 0).query(`
-        INSERT INTO VENTAS_DETALLE 
-  (ID_VENTA, ID_PRODUCTO, DESCRIPCION, CANTIDAD, PRECIO_VENTA, PRECIO_COSTO, GANANCIA, IMPORTE, IVA, IMPUESTO1, IMPUESTO2, RETENCION)
-VALUES 
-  (@id_venta, @id_producto, @descripcion, @cantidad, @precio_venta, @precio_costo, @ganancia, @importe, @iva, @impuesto1, @impuesto2, @retencion)
+        INSERT INTO VENTAS_DETALLE (
+          ID_VENTA, ID_PRODUCTO, DESCRIPCION, CANTIDAD, PRECIO_VENTA,
+          PRECIO_COSTO, GANANCIA, IMPORTE, IVA, IMPUESTO1, IMPUESTO2, RETENCION
+        )
+      VALUES (@id_venta, @id_producto, @descripcion, @cantidad, @precio_venta, @precio_costo, @ganancia, @importe, @iva, @impuesto1, @impuesto2, @retencion)
       `);
   }
 };
