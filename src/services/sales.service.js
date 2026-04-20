@@ -73,7 +73,10 @@ export const insertSaleDetails = async (
           ID_VENTA, ID_PRODUCTO, DESCRIPCION, CANTIDAD, PRECIO_VENTA,
           PRECIO_COSTO, GANANCIA, IMPORTE, IVA, IMPUESTO1, IMPUESTO2, RETENCION
         )
-      VALUES (@id_venta, @id_producto, @descripcion, @cantidad, @precio_venta, @precio_costo, @ganancia, @importe, @iva, @impuesto1, @impuesto2, @retencion)
+        VALUES (
+          @id_venta, @id_producto, @descripcion, @cantidad, @precio_venta,
+          @precio_costo, @ganancia, @importe, @iva, @impuesto1, @impuesto2, @retencion
+        )
       `);
   }
 };
