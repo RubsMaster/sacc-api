@@ -16,7 +16,7 @@ export const createProduct = async (pool, transaction, producto) => {
     .input("ID_PRODUCTO", sql.VarChar, producto.ID_PRODUCTO)
     .input("DESCRIPCION", sql.VarChar, producto.DESCRIPCION)
     .input("TIPO", sql.VarChar, "SIMPLE")
-    .input("VENTA_WEB", sql.Char, "S")
+    .input("VENTA_WEB", sql.Char, "N")
     .input("MARCA", sql.VarChar, producto.MARCA ?? null)
     .input("GANANCIA", sql.Float, producto.PORCENAJE_GANANCIA ?? 0)
     .input("PRECIO_COSTO", sql.Float, producto.PRECIO_COSTO)
