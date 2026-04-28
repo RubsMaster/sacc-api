@@ -4,8 +4,12 @@ import { findProductByID, createProduct } from "./products.service.js";
 export const insertSale = async (
   pool,
   transaction,
-  { id_cliente, nombre, subtotal, iva, total },
+  { id_cliente, nombre, subtotal, iva, total, credito },
 ) => {
+  const formaPago = credito ? "PAGO EN PARCIALIDADES" : "PAGO EN UNA SOLA EXHIBICION";
+  const unaExhibicion = credito ? "S" : "N"
+  console.log(credito)
+return;
   const result = await pool
     .request(transaction)
     .input("id_cliente", sql.Int, id_cliente)
@@ -16,8 +20,8 @@ export const insertSale = async (
     .input("descuento", sql.Decimal(10, 2), 0)
     .input("fecha", sql.DateTime, new Date())
     .input("id_usuario", sql.Int, 0)
-    .input("forma_pago", sql.VarChar, "PAGO EN UNA SOLA EXHIBICION")
-    .input("una_exibicion", sql.Char, "S")
+    .input("forma_pago", sql.VarChar, formaPago)
+    .input("una_exibicion", sql.Char, unaExhibicion)
     .input("sucursal", sql.Char, "BODEGA")
     .input("dias_credito", sql.Int, 0)
     .input("facturado", sql.Char, "0")

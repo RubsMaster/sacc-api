@@ -24,6 +24,7 @@ export const getClientsCredit = async () => {
       c.dias_credito, 
       c.usocfdi, 
       c.regimenfiscal,
+      c.email,
       c.LIMITE_CREDITO,
       ISNULL(Deudas.TotalDeuda, 0) AS deuda_actual,
       (c.LIMITE_CREDITO - ISNULL(Deudas.TotalDeuda, 0)) AS credito_disponible

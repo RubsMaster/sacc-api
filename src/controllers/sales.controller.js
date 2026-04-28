@@ -5,11 +5,10 @@ import { getConnection } from '../config/db.js';
 const RFC_PUBLICO_GENERAL = 'XAXX010101000';
 
 export const createSale = async (req, res) => {
-  const { subtotal, iva, total, productos = [] } = req.body;
+  const { subtotal, iva, total, credito, productos = [] } = req.body;
 
   const pool = await getConnection();
   const transaction = pool.transaction();
-
   try {
     const cliente = await clientService.findClientByRfc(RFC_PUBLICO_GENERAL);
 
@@ -23,6 +22,7 @@ export const createSale = async (req, res) => {
       id_cliente: cliente.ID,
       nombre: cliente.Nombre,
       rfc: cliente.RFC,
+      credito,
       subtotal,
       iva,
       total,
