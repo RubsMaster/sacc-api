@@ -44,6 +44,14 @@ export const getClientsCredit = async () => {
 };
 
 export const createClient = async (cliente) => {
+  const hoy = new Date();
+
+  const dia = String(hoy.getDate()).padStart(2, '0');
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+  const anio = hoy.getFullYear();
+
+  const fecha = `${dia}/${mes}/${anio}`;
+
   const pool = await getConnection();
   const result = await pool
     .request()
@@ -59,7 +67,7 @@ export const createClient = async (cliente) => {
     .input("email", sql.VarChar, cliente.email)
     .input("usoCFDI", sql.VarChar, cliente.usoCFDI)
     .input("regimenfiscal", sql.VarChar, cliente.regimenfiscal)
-    .input("fecha_alta", sql.DateTime, new Date())
+    .input("fecha_alta", sql.VarChar, fecha)
     .query(`
       INSERT INTO CLIENTE (
         NOMBRE, RFC, TELEFONO_CASA, PAIS, DIRECCION,
@@ -68,9 +76,9 @@ export const createClient = async (cliente) => {
       )
       OUTPUT INSERTED.ID_CLIENTE
       VALUES (
-        UPPER(@nombre), UPPER(@rfc), UPPER(@telefono_casa), UPPER(@pais),
+        UPPER(@nombre), UPPER(@rfc), @telefono_casa, UPPER(@pais),
         UPPER(@direccion), UPPER(@ciudad), UPPER(@colonia),
-        UPPER(@numero_exterior), UPPER(@cp), UPPER(@email),
+        @numero_exterior, @cp, @email,
         UPPER(@usoCFDI), UPPER(@regimenfiscal), @fecha_alta
       )
     `);

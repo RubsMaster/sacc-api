@@ -8,8 +8,8 @@ export const insertSale = async (
 ) => {
   const formaPago = credito ? "PAGO EN PARCIALIDADES" : "PAGO EN UNA SOLA EXHIBICION";
   const unaExhibicion = credito ? "S" : "N"
-  console.log(credito)
-return;
+  // console.log(credito)
+// return;
   const result = await pool
     .request(transaction)
     .input("id_cliente", sql.Int, id_cliente)
