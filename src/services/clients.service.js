@@ -67,9 +67,10 @@ export const createClient = async (cliente) => {
       )
       OUTPUT INSERTED.ID_CLIENTE
       VALUES (
-        @nombre, @rfc, @telefono_casa, @pais, @direccion,
-        @ciudad, @colonia, @numero_exterior, @cp, @email,
-        @usoCFDI, @regimenfiscal, @fecha_alta
+        UPPER(@nombre), UPPER(@rfc), UPPER(@telefono_casa), UPPER(@pais),
+        UPPER(@direccion), UPPER(@ciudad), UPPER(@colonia),
+        UPPER(@numero_exterior), UPPER(@cp), UPPER(@email),
+        UPPER(@usoCFDI), UPPER(@regimenfiscal), @fecha_alta
       )
     `);
 
