@@ -4,12 +4,11 @@ import { findProductByID, createProduct } from "./products.service.js";
 export const insertSale = async (
   pool,
   transaction,
-  { id_cliente, nombre, subtotal, iva, total, credito },
+  { id_cliente, nombre, subtotal, iva, total, credito, dias },
 ) => {
   const formaPago = credito ? "PAGO EN PARCIALIDADES" : "PAGO EN UNA SOLA EXHIBICION";
-  const unaExhibicion = credito ? "S" : "N"
-  // console.log(credito)
-// return;
+  const unaExhibicion = credito ? "N" : "S"
+  const dias_credito = dias || 0
   const result = await pool
     .request(transaction)
     .input("id_cliente", sql.Int, id_cliente)
@@ -22,8 +21,8 @@ export const insertSale = async (
     .input("id_usuario", sql.Int, 0)
     .input("forma_pago", sql.VarChar, formaPago)
     .input("una_exibicion", sql.Char, unaExhibicion)
+    .input("dias_credito", sql.Int, dias_credito)
     .input("sucursal", sql.Char, "BODEGA")
-    .input("dias_credito", sql.Int, 0)
     .input("facturado", sql.Char, "0")
     .input("impuesto1", sql.Decimal(10, 2), 0)
     .input("impuesto2", sql.Decimal(10, 2), 0)
@@ -72,7 +71,8 @@ export const insertSaleDetails = async (
       .input("iva", sql.Float, producto.IVA)
       .input("impuesto1", sql.Decimal(10, 2), 0)
       .input("impuesto2", sql.Decimal(10, 2), 0)
-      .input("retencion", sql.Decimal(10, 2), 0).query(`
+      .input("retencion", sql.Decimal(10, 2), 0)
+      .query(`
         INSERT INTO VENTAS_DETALLE (
           ID_VENTA, ID_PRODUCTO, DESCRIPCION, CANTIDAD, PRECIO_VENTA,
           PRECIO_COSTO, GANANCIA, IMPORTE, IVA, IMPUESTO1, IMPUESTO2, RETENCION
@@ -84,3 +84,54 @@ export const insertSaleDetails = async (
       `);
   }
 };
+
+export const insertDebt = async (
+  pool,
+  transaction,
+  id_venta,
+  id_cliente,
+  total,
+  dias
+) => {
+  const fechaHoy = new Date()
+  const fechaVence = new Date(fechaHoy)
+  fechaVence.setDate(fechaVence.getDate() + dias)
+
+  const cuenta = await pool
+    .request(transaction)
+    .input("id_venta", sql.Int, id_venta)
+    .input("id_cliente", sql.Int, id_cliente)
+    .input("id_usuario", sql.Int, 0)
+    .input("deuda", sql.Float, total)
+    .input("dias_credito", sql.Int, dias)
+    .input("fecha", sql.DateTime, new Date())
+    .input("fecha_vence", sql.DateTime, fechaVence)
+    .input("descuento", sql.Float, 0)
+    .input("total_compra", sql.Float, total)
+    .input("sucursal", sql.Char(15), "BODEGA")
+    .input("pagada", sql.Char(1), "N")
+    .query(`
+      INSERT INTO CUENTAS (
+        id_venta, id_cliente, id_usuario, fecha, dias_credito,
+        fecha_vence, descuento, total_compra, sucursal, pagada, deuda
+      )
+      OUTPUT INSERTED.id_cuenta
+      VALUES (
+        @id_venta, @id_cliente, @id_usuario, @fecha, @dias_credito,
+        @fecha_vence, @descuento, @total_compra, @sucursal, @pagada, @deuda
+      )
+    `);
+    const id_cuenta = cuenta.recordset[0].id_cuenta;
+    const cuentaVenta = await pool
+      .request(transaction)
+      .input("id_venta", sql.Int, id_venta)
+      .input("id_cuenta", sql.Int, id_cuenta)
+      .query(`
+      INSERT INTO cuenta_venta (
+          id_venta, id_cuenta
+        )
+        VALUES (
+          @id_venta, @id_cuenta
+        )
+      `);
+}

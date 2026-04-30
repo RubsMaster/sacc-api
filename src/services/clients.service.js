@@ -12,6 +12,23 @@ export const findClientByRfc = async (rfc) => {
   return result.recordset[0];
 };
 
+export const getClientCreditByID = async (id) => {
+  const pool = await getConnection();
+  const query = `
+    SELECT 
+      c.id_cliente as ID, 
+      c.nombre, 
+      c.rfc, 
+      c.dias_credito,
+      c.email,
+      c.LIMITE_CREDITO
+    FROM cliente c
+    WHERE c.ID_CLIENTE = ${id}
+  `;
+  const result = await pool.request().query(query);
+  return result.recordset[0];
+}
+
 export const getClientsCredit = async () => {
   const pool = await getConnection();
 
