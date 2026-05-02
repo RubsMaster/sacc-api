@@ -9,6 +9,14 @@ export const findProductByID = async (id) => {
 
   return result.recordset[0] ?? null;
 };
+export const getAllProducts = async () => {
+  const result = await pool
+    .request()
+    .input("id_producto", sql.VarChar, id)
+    .query("SELECT * FROM ALMACEN3 WHERE venta_web = 'S'");
+
+  return result.recordset[0] ?? null;
+}
 
 export const createProduct = async (pool, transaction, producto) => {
   const result = await pool
