@@ -53,6 +53,8 @@ export const getClientsCredit = async () => {
     ) Deudas ON c.id_cliente = Deudas.id_cliente
     WHERE c.LIMITE_CREDITO > 0 
       AND c.dias_credito > 0
+      AND c.VALORACION = 'A'
+	    AND (c.EMAIL is not null)
   `;
 
   const result = await pool.request().query(query);
