@@ -12,6 +12,42 @@ export const findClientByRfc = async (rfc) => {
   return result.recordset[0];
 };
 
+export const findClientByID = async (id) => {
+  const pool = await getConnection();
+  const result = await pool
+    .request()
+    .input("id", sql.Int, id)
+    .query(`
+      SELECT 
+        c.id_cliente, 
+        c.nombre, 
+        c.rfc, 
+        c.telefono_casa, 
+        c.dias_credito, 
+        c.usocfdi, 
+        c.regimenfiscal,
+        c.email,
+        c.LIMITE_CREDITO,
+        ISNULL(Deudas.TotalDeuda, 0) AS deuda_actual,
+        (c.LIMITE_CREDITO - ISNULL(Deudas.TotalDeuda, 0)) AS credito_disponible,
+        c.direccion,
+        c.colonia,
+        c.numero_exterior,
+        c.cp,
+        c.ciudad,
+        c.estado,
+        c.pais
+      FROM cliente c
+      LEFT JOIN (
+        SELECT id_cliente, SUM(deuda) AS TotalDeuda 
+        FROM cuentas 
+        GROUP BY id_cliente
+      ) Deudas ON c.id_cliente = Deudas.id_cliente
+    `);
+
+  return result.recordset[0];
+}
+
 export const getClientCreditByID = async (id) => {
   const pool = await getConnection();
   const query = `

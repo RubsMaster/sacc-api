@@ -1,4 +1,4 @@
-import { getClientsCredit, createClient, findClientByRfc } from '../services/clients.service.js';
+import { getClientsCredit, createClient, findClientByRfc, findClientByID } from '../services/clients.service.js';
 
 export const getClientsWithCreditInfo = async (req, res) => {
   try {
@@ -44,3 +44,15 @@ export const postCreateClient = async (req, res) => {
     res.status(500).json({ error: 'Error al crear el cliente' });
   }
 };
+
+export const getClientByID = async (req, res) => {
+  try {
+    const id = req.params.id
+    const client = await findClientByID(id);
+    res.json(client);
+  } catch (error) {
+    console.error('Error en getClientByID:', error);
+    res.status(500).json({ error: 'Error al obtener la información del cliente' });
+  }
+  
+}
