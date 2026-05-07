@@ -1,5 +1,19 @@
 import { getConnection, sql } from "../config/db.js";
 
+// ---------- FUNCIÓN AUXILIAR PARA FORMATEAR TELÉFONO ----------
+const formatPhoneNumber = (raw) => {
+  if (!raw) return '';
+  // Extraer solo dígitos
+  const digits = raw.replace(/\D/g, '');
+  // Formato mexicano a 10 dígitos: 123-456-7890
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  // Si no tiene 10 dígitos, devolver solo los dígitos (o cadena vacía si ninguno)
+  return digits;
+};
+
+// ---------- FUNCIONES DEL MODELO ----------
 export const findClientByRfc = async (rfc) => {
   const pool = await getConnection();
   const result = await pool
@@ -45,11 +59,20 @@ export const findClientByID = async (id) => {
       ) Deudas ON c.id_cliente = Deudas.id_cliente
     `);
 
-  return result.recordset[0];
-}
+  const client = result.recordset[0];
+  if (!client) return null;
+
+  return {
+    ...client,
+    telefono_casa: formatPhoneNumber(client.telefono_casa),
+    cp: client.cp ? client.cp.trim() : '',
+    numero_exterior: client.numero_exterior ? client.numero_exterior.trim() : ''
+  };
+};
 
 export const getClientCreditByID = async (id) => {
   const pool = await getConnection();
+  // NOTA: Esta consulta es propensa a inyección SQL. Se recomienda usar parámetros.
   const query = `
     SELECT 
       c.id_cliente as ID, 
@@ -63,7 +86,7 @@ export const getClientCreditByID = async (id) => {
   `;
   const result = await pool.request().query(query);
   return result.recordset[0];
-}
+};
 
 export const getClientsCredit = async () => {
   const pool = await getConnection();
@@ -80,7 +103,14 @@ export const getClientsCredit = async () => {
       c.email,
       c.LIMITE_CREDITO,
       ISNULL(Deudas.TotalDeuda, 0) AS deuda_actual,
-      (c.LIMITE_CREDITO - ISNULL(Deudas.TotalDeuda, 0)) AS credito_disponible
+      (c.LIMITE_CREDITO - ISNULL(Deudas.TotalDeuda, 0)) AS credito_disponible,
+      c.direccion,
+      c.colonia,
+      c.numero_exterior,
+      c.cp,
+      c.ciudad,
+      c.estado,
+      c.pais
     FROM cliente c
     LEFT JOIN (
       SELECT id_cliente, SUM(deuda) AS TotalDeuda 
@@ -90,12 +120,17 @@ export const getClientsCredit = async () => {
     WHERE c.LIMITE_CREDITO > 0 
       AND c.dias_credito > 0
       AND c.VALORACION = 'A'
-	    AND (c.EMAIL is not null)
+      AND (c.EMAIL is not null)
   `;
 
   const result = await pool.request().query(query);
 
-  return result.recordset;
+  return result.recordset.map(client => ({
+    ...client,
+    telefono_casa: formatPhoneNumber(client.telefono_casa),
+    cp: client.cp ? client.cp.trim() : '',
+    numero_exterior: client.numero_exterior ? client.numero_exterior.trim() : ''
+  }));
 };
 
 export const createClient = async (cliente) => {
