@@ -43,14 +43,16 @@ export const createSale = async (req, res) => {
       productos
     );
 
-    await salesService.insertDebt(
-      pool, 
-      transaction,
-      newSale.id_venta, 
-      cliente.ID, 
-      total, 
-      cliente.dias_credito
-    );
+    if (credito) {
+      await salesService.insertDebt(
+        pool,
+        transaction,
+        newSale.id_venta,
+        cliente.ID,
+        total,
+        cliente.dias_credito
+      );
+    }
 
     await transaction.commit();
 

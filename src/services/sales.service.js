@@ -95,7 +95,7 @@ export const insertDebt = async (
 ) => {
   const fechaHoy = new Date()
   const fechaVence = new Date(fechaHoy)
-  fechaVence.setDate(fechaVence.getDate() + dias)
+  fechaVence.setDate(fechaVence.getDate() + (Number(dias) || 0))
 
   const cuenta = await pool
     .request(transaction)
