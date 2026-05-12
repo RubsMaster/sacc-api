@@ -7,6 +7,6 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/sales', salesRoutes);
-app.use('/api/clients', clientsRoutes); 
+app.use('/api/clients', clientsRoutes);
 app.use('/api/products', productsRoutes);
 export default app;
