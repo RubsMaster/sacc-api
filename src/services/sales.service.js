@@ -135,3 +135,33 @@ export const insertDebt = async (
         )
       `);
 }
+
+export const getClientSales = async (id) => {
+  const pool = await getConnection();
+  const result = await pool
+    .request()
+    .input("id_cliente", sql.Int, id)
+    .query(`
+      select  
+        ID_VENTA,
+        ID_CLIENTE,
+        NOMBRE,
+        SUBTOTAL,
+        IVA,
+        TOTAL,
+        FECHA,
+        TRIM(FORMA_PAGO) AS FORMA_PAGO,
+        UNA_EXIBICION,
+        PARCIALIDADES,
+        trim(SUCURSAL) as SUCURSAL,
+        DIAS_CREDITO,
+        FECHA_VENCE,
+        TIPO_PAGO,
+        COMENTARIO,
+        FormaPagoSAT
+      from ventas 
+      where id_cliente = @id_cliente  
+    `);
+
+  return result.recordset ?? null;
+}
