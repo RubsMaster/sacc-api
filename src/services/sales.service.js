@@ -142,25 +142,27 @@ export const getClientSales = async (id) => {
     .request()
     .input("id_cliente", sql.Int, id)
     .query(`
-      select  
-        ID_VENTA,
-        ID_CLIENTE,
-        NOMBRE,
-        SUBTOTAL,
-        IVA,
-        TOTAL,
-        FECHA,
-        TRIM(FORMA_PAGO) AS FORMA_PAGO,
-        UNA_EXIBICION,
-        PARCIALIDADES,
-        trim(SUCURSAL) as SUCURSAL,
-        DIAS_CREDITO,
-        FECHA_VENCE,
-        TIPO_PAGO,
-        COMENTARIO,
-        FormaPagoSAT
-      from ventas 
-      where id_cliente = @id_cliente  
+      SELECT 
+                V.ID_VENTA, 
+                V.ID_CLIENTE, 
+                V.NOMBRE, 
+                V.SUBTOTAL, 
+                V.IVA, 
+                V.TOTAL, 
+                V.FECHA, 
+                TRIM(V.FORMA_PAGO) AS FORMA_PAGO, 
+                V.UNA_EXIBICION, 
+                V.PARCIALIDADES, 
+                TRIM(V.SUCURSAL) as SUCURSAL,
+                V.DIAS_CREDITO, 
+                V.FECHA_VENCE, 
+                V.TIPO_PAGO, 
+                V.COMENTARIO, 
+                V.FormaPagoSAT,
+                C.DEUDA_ACTUAL -- <--- Aquí agregamos la deuda
+            FROM VENTAS V
+            LEFT JOIN CUENTAS C ON V.ID_VENTA = C.ID_VENTA
+            WHERE V.id_cliente = @id_cliente
     `);
 
   return result.recordset ?? null;
