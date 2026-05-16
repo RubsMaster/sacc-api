@@ -159,7 +159,7 @@ export const getClientSales = async (id) => {
                 V.TIPO_PAGO, 
                 V.COMENTARIO, 
                 V.FormaPagoSAT,
-                C.DEUDA_ACTUAL -- <--- Aquí agregamos la deuda
+                C.DEUDA -- <--- Aquí agregamos la deuda
             FROM VENTAS V
             LEFT JOIN CUENTAS C ON V.ID_VENTA = C.ID_VENTA
             WHERE V.id_cliente = @id_cliente
