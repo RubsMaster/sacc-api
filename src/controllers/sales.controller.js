@@ -79,28 +79,3 @@ export const getClientSales = async (req, res) => {
     res.status(500).json({ error: "Error al obtener datos" });
   }
 };
-// newSale = await salesService.insertSale(pool, transaction, {
-//   id_cliente: cliente.ID,
-//   nombre: cliente.nombre || "desconocido",
-//   dias: cliente.dias_credito,
-//   credito,
-//   subtotal,
-//   iva,
-//   total,
-// });
-
-// await salesService.insertSaleDetails(
-//   pool,
-//   transaction,
-//   newSale.id_venta,
-//   productos,
-// );
-
-// await salesService.insertDebt(
-//   pool,
-//   transaction,
-//   newSale.id_venta,
-//   cliente.ID,
-//   total,
-//   cliente.dias_credito,
-// );
