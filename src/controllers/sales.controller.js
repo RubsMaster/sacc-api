@@ -1,24 +1,19 @@
 import * as salesService from "../services/sales.service.js";
 import * as clientService from "../services/clients.service.js";
+import * as productsService from "../services/products.service.js"
 import { getConnection } from "../config/db.js";
 
 const RFC_PUBLICO_GENERAL = "XAXX010101000";
 
-export const createSale = async (req, res) => {
-  const {
-    subtotal,
-    iva,
-    total,
-    credito,
-    id_cliente,
-    productos = [],
-  } = req.body;
+export const createSaleRequi = async (req, res) => {
+  const { id_cliente, comentario, productos = [] } = req.body;
   if (!productos || productos.length <= 0) {
     return res
       .status(400)
       .json({ error: "No se pueden registrar ventas sin producto" });
   }
-
+  let publicoGeneral = false;
+  let newSale = null;
   const pool = await getConnection();
   const transaction = pool.transaction();
   try {
@@ -30,43 +25,38 @@ export const createSale = async (req, res) => {
     }
 
     if (!cliente?.ID) {
-      return res.status(400).json({ error: "No se encontró cliente" });
+      return res.status(404).json({ error: "No se encontró cliente" });
     }
 
     await transaction.begin();
 
-    const newSale = await salesService.insertSale(pool, transaction, {
-      id_cliente: cliente.ID,
-      nombre: cliente.nombre || "desconocido",
-      dias: cliente.dias_credito,
-      credito,
-      subtotal,
-      iva,
-      total,
-    });
-
-    await salesService.insertSaleDetails(
+    newSale = await salesService.insertSaleRequest(
       pool,
       transaction,
-      newSale.id_venta,
+      cliente.ID,
+      comentario
+    );
+    console.log(newSale)
+    await salesService.insertSaleRequestDetails(
+      pool, 
+      transaction, 
+      newSale.no_pedido,
+      comentario,
       productos,
     );
 
-    if (credito) {
-      await salesService.insertDebt(
-        pool,
-        transaction,
-        newSale.id_venta,
-        cliente.ID,
-        total,
-        cliente.dias_credito
-      );
+    for (const producto of productos) {
+      let existe = await productsService.findProductByID(producto.ID_PRODUCTO);
+      if (!existe) {
+        existe = await productsService.createProduct(pool, transaction, producto);
+      }
+      await salesService.insertRequi(pool, transaction, producto, comentario);
     }
 
     await transaction.commit();
 
     res.status(201).json({
-      mensaje: "Venta creada exitosamente",
+      mensaje: "Venta programada creada exitosamente",
       venta: { ...newSale, productos },
     });
   } catch (error) {
@@ -78,8 +68,8 @@ export const createSale = async (req, res) => {
 
 export const getClientSales = async (req, res) => {
   try {
-    const id = req.params.id
-    const sales = await salesService.getClientSales(id)
+    const id = req.params.id;
+    const sales = await salesService.getClientSales(id);
     res.json({
       totalRegistros: sales.length,
       ventas: sales,

@@ -13,7 +13,6 @@ export const getClientsWithCreditInfo = async (req, res) => {
   }
 };
 
-
 export const postCreateClient = async (req, res) => {
   const {
     nombre, rfc, telefono_casa, pais, direccion,

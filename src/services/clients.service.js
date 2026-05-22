@@ -19,8 +19,9 @@ export const findClientByRfc = async (rfc) => {
   const result = await pool
     .request()
     .input("rfc", sql.VarChar, rfc)
+    .input("estado", sql.Char(1), "A")
     .query(
-      "SELECT id_cliente as ID, Nombre, RFC FROM cliente WHERE RFC = @rfc",
+      "SELECT id_cliente as ID, Nombre, RFC FROM cliente WHERE RFC = @rfc and estado = @estado",
     );
 
   return result.recordset[0];
