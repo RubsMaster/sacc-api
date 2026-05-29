@@ -1,25 +1,30 @@
 import sql from 'mssql';
 import 'dotenv/config';
 
-const dbSettings = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER, 
-  database: process.env.DB_NAME,
+const makeConfig = (prefix = '') => ({
+  user: process.env[`${prefix}DB_USER`],
+  password: process.env[`${prefix}DB_PASSWORD`],
+  server: process.env[`${prefix}DB_SERVER`],
+  database: process.env[`${prefix}DB_NAME`],
   options: {
     encrypt: true,
     trustServerCertificate: true,
   },
-};
+});
 
-export const getConnection = async () => {
+const pools = { production: null, sandbox: null };
+
+export const initializePools = async () => {
   try {
-    const pool = await sql.connect(dbSettings);
-    console.log('Conexión a la base de datos SQL Server exitosa');
-    return pool;
+    pools.production = await new sql.ConnectionPool(makeConfig()).connect();
+    console.log('Pool producción conectado');
+    pools.sandbox = await new sql.ConnectionPool(makeConfig('SANDBOX_')).connect();
+    console.log('Pool sandbox conectado');
   } catch (error) {
-    console.error('Error conectando a la base de datos:', error.message);
-    process.exit(1); 
+    console.error('Error conectando a las bases de datos:', error.message);
+    process.exit(1);
   }
 };
+
+export const getPools = () => pools;
 export { sql };

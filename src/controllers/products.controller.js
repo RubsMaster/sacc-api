@@ -1,7 +1,8 @@
-import {getAllProducts} from '../services/products.service.js'
+import { getAllProducts } from '../services/products.service.js';
+
 export const getProducts = async (req, res) => {
   try {
-    const products = await getAllProducts();
+    const products = await getAllProducts(req.db);
     res.json({
       totalRegistros: products.length,
       productos: products

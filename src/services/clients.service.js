@@ -1,21 +1,15 @@
-import { getConnection, sql } from "../config/db.js";
+import { sql } from "../config/db.js";
 
-// ---------- FUNCIÓN AUXILIAR PARA FORMATEAR TELÉFONO ----------
 const formatPhoneNumber = (raw) => {
   if (!raw) return '';
-  // Extraer solo dígitos
   const digits = raw.replace(/\D/g, '');
-  // Formato mexicano a 10 dígitos: 123-456-7890
   if (digits.length === 10) {
     return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
-  // Si no tiene 10 dígitos, devolver solo los dígitos (o cadena vacía si ninguno)
   return digits;
 };
 
-// ---------- FUNCIONES DEL MODELO ----------
-export const findClientByRfc = async (rfc) => {
-  const pool = await getConnection();
+export const findClientByRfc = async (pool, rfc) => {
   const result = await pool
     .request()
     .input("rfc", sql.VarChar, rfc)
@@ -27,31 +21,29 @@ export const findClientByRfc = async (rfc) => {
   return result.recordset[0];
 };
 
-export const findClientByID = async (id) => {
-  const pool = await getConnection();
-
+export const findClientByID = async (pool, id) => {
   const result = await pool
     .request()
     .input("id_cliente", sql.Int, id)
     .query(`
-      SELECT 
-        c.id_cliente, 
-        c.nombre, 
-        c.rfc, 
-        c.telefono_casa, 
-        c.dias_credito, 
-        c.usocfdi, 
+      SELECT
+        c.id_cliente,
+        c.nombre,
+        c.rfc,
+        c.telefono_casa,
+        c.dias_credito,
+        c.usocfdi,
         c.regimenfiscal,
         c.email,
         c.LIMITE_CREDITO,
         ISNULL((
-          SELECT SUM(deuda) 
-          FROM cuentas 
-          WHERE id_cliente = c.id_cliente   -- solo calcula para este cliente
+          SELECT SUM(deuda)
+          FROM cuentas
+          WHERE id_cliente = c.id_cliente
         ), 0) AS deuda_actual,
         c.LIMITE_CREDITO - ISNULL((
-          SELECT SUM(deuda) 
-          FROM cuentas 
+          SELECT SUM(deuda)
+          FROM cuentas
           WHERE id_cliente = c.id_cliente
         ), 0) AS credito_disponible
       FROM cliente c
@@ -69,35 +61,33 @@ export const findClientByID = async (id) => {
   };
 };
 
-export const getClientCreditByID = async (id) => {
-  const pool = await getConnection();
-  // NOTA: Esta consulta es propensa a inyección SQL. Se recomienda usar parámetros.
-  const query = `
-    SELECT 
-      c.id_cliente as ID, 
-      c.nombre, 
-      c.rfc, 
-      c.dias_credito,
-      c.email,
-      c.LIMITE_CREDITO
-    FROM cliente c
-    WHERE c.ID_CLIENTE = ${id}
-  `;
-  const result = await pool.request().query(query);
+export const getClientCreditByID = async (pool, id) => {
+  const result = await pool
+    .request()
+    .input("id_cliente", sql.Int, id)
+    .query(`
+      SELECT
+        c.id_cliente as ID,
+        c.nombre,
+        c.rfc,
+        c.dias_credito,
+        c.email,
+        c.LIMITE_CREDITO
+      FROM cliente c
+      WHERE c.ID_CLIENTE = @id_cliente
+    `);
   return result.recordset[0];
 };
 
-export const getClientsCredit = async () => {
-  const pool = await getConnection();
-
+export const getClientsCredit = async (pool) => {
   const query = `
-    SELECT 
-      c.id_cliente, 
-      c.nombre, 
-      c.rfc, 
-      c.telefono_casa, 
-      c.dias_credito, 
-      c.usocfdi, 
+    SELECT
+      c.id_cliente,
+      c.nombre,
+      c.rfc,
+      c.telefono_casa,
+      c.dias_credito,
+      c.usocfdi,
       c.regimenfiscal,
       c.email,
       c.LIMITE_CREDITO,
@@ -112,11 +102,11 @@ export const getClientsCredit = async () => {
       c.pais
     FROM cliente c
     LEFT JOIN (
-      SELECT id_cliente, SUM(deuda) AS TotalDeuda 
-      FROM cuentas 
+      SELECT id_cliente, SUM(deuda) AS TotalDeuda
+      FROM cuentas
       GROUP BY id_cliente
     ) Deudas ON c.id_cliente = Deudas.id_cliente
-    WHERE c.LIMITE_CREDITO > 0 
+    WHERE c.LIMITE_CREDITO > 0
       AND c.dias_credito > 0
       AND c.VALORACION = 'A'
       AND (c.EMAIL is not null)
@@ -132,16 +122,13 @@ export const getClientsCredit = async () => {
   }));
 };
 
-export const createClient = async (cliente) => {
+export const createClient = async (pool, cliente) => {
   const hoy = new Date();
-
   const dia = String(hoy.getDate()).padStart(2, '0');
   const mes = String(hoy.getMonth() + 1).padStart(2, '0');
   const anio = hoy.getFullYear();
-
   const fecha = `${dia}/${mes}/${anio}`;
 
-  const pool = await getConnection();
   const result = await pool
     .request()
     .input("nombre", sql.VarChar, cliente.nombre)
