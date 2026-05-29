@@ -15,13 +15,14 @@ const result = await pool
     .input("comentario", sql.VarChar(300), `Venta Web ${folioVenta}`)
     .input("fecha", sql.DateTime, new Date())
     .input("fecha_captura", sql.DateTime, new Date())
+    .input("origen", sql.Char(1), "W")
     .query(`
       INSERT INTO ped_clien (
-        id_cliente, usuario, fecha, fecha_captura, estado,comentario
+        id_cliente, usuario, fecha, fecha_captura, estado,comentario, origen
       ) 
       OUTPUT INSERTED.NO_PEDIDO
       VALUES (
-        @id_cliente, @usuario, @fecha, @fecha_captura, @estado, @comentario
+        @id_cliente, @usuario, @fecha, @fecha_captura, @estado, @comentario, @origen
       )
     `);
     return result.recordset[0];
