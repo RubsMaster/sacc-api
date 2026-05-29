@@ -2,7 +2,7 @@ import { getClientsCredit, createClient, findClientByRfc, findClientByID } from 
 
 export const getClientsWithCreditInfo = async (req, res) => {
   try {
-    const clients = await getClientsCredit();
+    const clients = await getClientsCredit(req.db);
     res.json({
       totalRegistros: clients.length,
       clientes: clients
@@ -21,13 +21,13 @@ export const postCreateClient = async (req, res) => {
   } = req.body;
 
   try {
-    const clienteExistente = await findClientByRfc(rfc);
+    const clienteExistente = await findClientByRfc(req.db, rfc);
 
     if (clienteExistente) {
       return res.status(409).json({ error: 'Ya existe un cliente registrado con ese RFC' });
     }
 
-    const newClient = await createClient({
+    const newClient = await createClient(req.db, {
       nombre, rfc, telefono_casa, pais, direccion,
       ciudad, colonia, numero_exterior, cp, email,
       usoCFDI, regimenfiscal
@@ -46,12 +46,11 @@ export const postCreateClient = async (req, res) => {
 
 export const getClientByID = async (req, res) => {
   try {
-    const id = req.params.id
-    const client = await findClientByID(id);
+    const id = req.params.id;
+    const client = await findClientByID(req.db, id);
     res.json(client);
   } catch (error) {
     console.error('Error en getClientByID:', error);
     res.status(500).json({ error: 'Error al obtener la información del cliente' });
   }
-  
-}
+};

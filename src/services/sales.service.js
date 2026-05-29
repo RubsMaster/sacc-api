@@ -1,13 +1,13 @@
-import { getConnection, sql } from "../config/db.js";
+import { sql } from "../config/db.js";
 import { findProductByID, createProduct } from "./products.service.js";
 
-export const insertSaleRequest = async ( 
+export const insertSaleRequest = async (
   pool,
   transaction,
-  id_cliente, 
+  id_cliente,
   folioVenta
 ) => {
-const result = await pool
+  const result = await pool
     .request(transaction)
     .input("id_cliente", sql.Int, id_cliente)
     .input("usuario", sql.VarChar, "0")
@@ -18,15 +18,15 @@ const result = await pool
     .input("origen", sql.Char(1), "W")
     .query(`
       INSERT INTO ped_clien (
-        id_cliente, usuario, fecha, fecha_captura, estado,comentario, origen
-      ) 
+        id_cliente, usuario, fecha, fecha_captura, estado, comentario, origen
+      )
       OUTPUT INSERTED.NO_PEDIDO
       VALUES (
         @id_cliente, @usuario, @fecha, @fecha_captura, @estado, @comentario, @origen
       )
     `);
-    return result.recordset[0];
-}
+  return result.recordset[0];
+};
 
 export const insertSaleRequestDetails = async (
   pool,
@@ -36,7 +36,7 @@ export const insertSaleRequestDetails = async (
   productos
 ) => {
   for (const producto of productos) {
-    let existe = await findProductByID(producto.ID_PRODUCTO);
+    let existe = await findProductByID(pool, producto.ID_PRODUCTO);
 
     if (!existe) {
       existe = await createProduct(pool, transaction, producto);
@@ -63,60 +63,59 @@ export const insertSaleRequestDetails = async (
 };
 
 export const insertRequi = async (
-  pool, 
+  pool,
   transaction,
   producto,
   comentario
 ) => {
   await pool
-      .request(transaction)
-      .input("id_producto", sql.VarChar(), producto.ID_PRODUCTO)
-      .input("descripcion", sql.VarChar(500), producto.DESCRIPCION)
-      .input("marca", sql.VarChar(50), producto.MARCA)
-      .input("activo", sql.Char(1), "0")
-      .input("contador", sql.Int, 0)
-      .input("cotizada", sql.Char(1), "0")
-      .input("folio", sql.Int, 0)
-      .input("urgente", sql.VarChar(1), "S")
-      .input("fecha", sql.DateTime, new Date())
-      .input("cantidad", sql.Float, producto.CANTIDAD)
-      .input("comentario", sql.VarChar(500), comentario)
-      .query(`
-        INSERT INTO REQUISICION (
-          id_producto, descripcion, marca, activo, 
-          contador, cotizada, folio, urgente, fecha,
-          cantidad, comentario
-        )
-        VALUES (
-          @id_producto, @descripcion, @marca, @activo,
-          @contador, @cotizada, @folio, @urgente, @fecha, 
-          @cantidad, @comentario
-        )
-      `);
-}
+    .request(transaction)
+    .input("id_producto", sql.VarChar(), producto.ID_PRODUCTO)
+    .input("descripcion", sql.VarChar(500), producto.DESCRIPCION)
+    .input("marca", sql.VarChar(50), producto.MARCA)
+    .input("activo", sql.Char(1), "0")
+    .input("contador", sql.Int, 0)
+    .input("cotizada", sql.Char(1), "0")
+    .input("folio", sql.Int, 0)
+    .input("urgente", sql.VarChar(1), "S")
+    .input("fecha", sql.DateTime, new Date())
+    .input("cantidad", sql.Float, producto.CANTIDAD)
+    .input("comentario", sql.VarChar(500), comentario)
+    .query(`
+      INSERT INTO REQUISICION (
+        id_producto, descripcion, marca, activo,
+        contador, cotizada, folio, urgente, fecha,
+        cantidad, comentario
+      )
+      VALUES (
+        @id_producto, @descripcion, @marca, @activo,
+        @contador, @cotizada, @folio, @urgente, @fecha,
+        @cantidad, @comentario
+      )
+    `);
+};
 
-export const getClientSales = async (id) => {
-  const pool = await getConnection();
+export const getClientSales = async (pool, id) => {
   const result = await pool
     .request()
     .input("id_cliente", sql.Int, id)
     .query(`
-      SELECT 
-        V.ID_VENTA, 
-        V.ID_CLIENTE, 
-        V.NOMBRE, 
-        V.SUBTOTAL, 
-        V.IVA, 
-        V.TOTAL, 
-        V.FECHA, 
-        TRIM(V.FORMA_PAGO) AS FORMA_PAGO, 
-        V.UNA_EXIBICION, 
-        V.PARCIALIDADES, 
+      SELECT
+        V.ID_VENTA,
+        V.ID_CLIENTE,
+        V.NOMBRE,
+        V.SUBTOTAL,
+        V.IVA,
+        V.TOTAL,
+        V.FECHA,
+        TRIM(V.FORMA_PAGO) AS FORMA_PAGO,
+        V.UNA_EXIBICION,
+        V.PARCIALIDADES,
         TRIM(V.SUCURSAL) as SUCURSAL,
-        V.DIAS_CREDITO, 
-        V.FECHA_VENCE, 
-        V.TIPO_PAGO, 
-        V.COMENTARIO, 
+        V.DIAS_CREDITO,
+        V.FECHA_VENCE,
+        V.TIPO_PAGO,
+        V.COMENTARIO,
         V.FormaPagoSAT,
         C.DEUDA
       FROM VENTAS V
@@ -125,4 +124,4 @@ export const getClientSales = async (id) => {
     `);
 
   return result.recordset ?? null;
-}
+};

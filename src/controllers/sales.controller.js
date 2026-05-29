@@ -1,7 +1,6 @@
 import * as salesService from "../services/sales.service.js";
 import * as clientService from "../services/clients.service.js";
-import * as productsService from "../services/products.service.js"
-import { getConnection } from "../config/db.js";
+import * as productsService from "../services/products.service.js";
 
 const RFC_PUBLICO_GENERAL = "XAXX010101000";
 
@@ -12,16 +11,15 @@ export const createSaleRequi = async (req, res) => {
       .status(400)
       .json({ error: "No se pueden registrar ventas sin producto" });
   }
-  let publicoGeneral = false;
   let newSale = null;
-  const pool = await getConnection();
+  const pool = req.db;
   const transaction = pool.transaction();
   try {
     let cliente;
     if (!id_cliente || id_cliente <= 0) {
-      cliente = await clientService.findClientByRfc(RFC_PUBLICO_GENERAL);
+      cliente = await clientService.findClientByRfc(pool, RFC_PUBLICO_GENERAL);
     } else {
-      cliente = await clientService.getClientCreditByID(id_cliente);
+      cliente = await clientService.getClientCreditByID(pool, id_cliente);
     }
 
     if (!cliente?.ID) {
@@ -36,17 +34,17 @@ export const createSaleRequi = async (req, res) => {
       cliente.ID,
       comentario
     );
-    console.log(newSale)
+    console.log(newSale);
     await salesService.insertSaleRequestDetails(
-      pool, 
-      transaction, 
+      pool,
+      transaction,
       newSale.no_pedido,
       comentario,
       productos,
     );
 
     for (const producto of productos) {
-      let existe = await productsService.findProductByID(producto.ID_PRODUCTO);
+      let existe = await productsService.findProductByID(pool, producto.ID_PRODUCTO);
       if (!existe) {
         existe = await productsService.createProduct(pool, transaction, producto);
       }
@@ -69,7 +67,7 @@ export const createSaleRequi = async (req, res) => {
 export const getClientSales = async (req, res) => {
   try {
     const id = req.params.id;
-    const sales = await salesService.getClientSales(id);
+    const sales = await salesService.getClientSales(req.db, id);
     res.json({
       totalRegistros: sales.length,
       ventas: sales,

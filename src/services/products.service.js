@@ -1,7 +1,6 @@
-import { getConnection, sql } from "../config/db.js";
+import { sql } from "../config/db.js";
 
-export const findProductByID = async (id) => {
-  const pool = await getConnection();
+export const findProductByID = async (pool, id) => {
   const result = await pool
     .request()
     .input("id_producto", sql.VarChar, id)
@@ -9,14 +8,14 @@ export const findProductByID = async (id) => {
 
   return result.recordset[0] ?? null;
 };
-export const getAllProducts = async () => {
+
+export const getAllProducts = async (pool) => {
   const result = await pool
     .request()
-    .input("id_producto", sql.VarChar, id)
     .query("SELECT * FROM ALMACEN3 WHERE venta_web = 'S'");
 
-  return result.recordset[0] ?? null;
-}
+  return result.recordset ?? null;
+};
 
 export const createProduct = async (pool, transaction, producto) => {
   const result = await pool
@@ -61,5 +60,5 @@ export const createProduct = async (pool, transaction, producto) => {
         @C_MINIMA, @C_MAXIMA, @ID_DESCUENTO, @MATERIAL, @COLOR
       )
     `);
-    return result
+  return result;
 };
