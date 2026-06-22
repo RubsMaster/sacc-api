@@ -34,11 +34,10 @@ export const createSaleRequi = async (req, res) => {
       cliente.ID,
       comentario
     );
-    console.log(newSale);
-    await salesService.insertSaleRequestDetails(
+    const resultadillo = await salesService.insertSaleRequestDetails(
       pool,
       transaction,
-      newSale.no_pedido,
+      newSale.NO_PEDIDO,
       comentario,
       productos,
     );

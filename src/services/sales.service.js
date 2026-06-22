@@ -42,7 +42,7 @@ export const insertSaleRequestDetails = async (
       existe = await createProduct(pool, transaction, producto);
     }
 
-    await pool
+    return await pool
       .request(transaction)
       .input("id_producto", sql.VarChar, producto.ID_PRODUCTO)
       .input("NO_PEDIDO", sql.Int, no_pedido)
@@ -54,6 +54,7 @@ export const insertSaleRequestDetails = async (
           ID_PRODUCTO, NO_PEDIDO,
           CANTIDAD_EXISTENCIA, CANTIDAD_PEDIDA, CANTIDAD_PENDIENTE
         )
+          OUTPUT INSERTED.ID
         VALUES (
           @ID_PRODUCTO, @NO_PEDIDO,
           @CANTIDAD_EXISTENCIA, @CANTIDAD_PEDIDA, @CANTIDAD_PENDIENTE
