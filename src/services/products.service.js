@@ -12,7 +12,8 @@ export const findProductByID = async (pool, id) => {
 export const getAllProducts = async (pool) => {
   const result = await pool
     .request()
-    .query("SELECT * FROM ALMACEN3 WHERE venta_web = 'S'");
+    .input("esWeb", sql.Char(1), "S")
+    .query("SELECT ID_PRODUCTO FROM ALMACEN3 WHERE VENTA_WEB = @esWeb");
 
   return result.recordset ?? null;
 };
