@@ -34,19 +34,22 @@ export const createSaleRequi = async (req, res) => {
       cliente.ID,
       comentario
     );
-    const resultadillo = await salesService.insertSaleRequestDetails(
-      pool,
-      transaction,
-      newSale.NO_PEDIDO,
-      comentario,
-      productos,
-    );
+    
 
     for (const producto of productos) {
       let existe = await productsService.findProductByID(pool, producto.ID_PRODUCTO);
       if (!existe) {
         existe = await productsService.createProduct(pool, transaction, producto);
       }
+
+      await salesService.insertSaleRequestDetails(
+        pool,
+        transaction,
+        newSale.NO_PEDIDO,
+        comentario,
+        producto,
+      );
+
       await salesService.insertRequi(pool, transaction, producto, comentario);
     }
 

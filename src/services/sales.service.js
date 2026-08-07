@@ -33,34 +33,32 @@ export const insertSaleRequestDetails = async (
   transaction,
   no_pedido,
   folio_venta,
-  productos
-) => {
-  for (const producto of productos) {
-    let existe = await findProductByID(pool, producto.ID_PRODUCTO);
+  producto
+) => {  
+  let existe = await findProductByID(pool, producto.ID_PRODUCTO);
 
-    if (!existe) {
-      existe = await createProduct(pool, transaction, producto);
-    }
-
-    return await pool
-      .request(transaction)
-      .input("id_producto", sql.VarChar, producto.ID_PRODUCTO)
-      .input("NO_PEDIDO", sql.Int, no_pedido)
-      .input("CANTIDAD_EXISTENCIA", sql.VarChar, "0")
-      .input("CANTIDAD_PEDIDA", sql.Float, producto.CANTIDAD)
-      .input("CANTIDAD_PENDIENTE", sql.Float, producto.CANTIDAD)
-      .query(`
-        INSERT INTO PED_CLIEN_DETALLE (
-          ID_PRODUCTO, NO_PEDIDO,
-          CANTIDAD_EXISTENCIA, CANTIDAD_PEDIDA, CANTIDAD_PENDIENTE
-        )
-          OUTPUT INSERTED.ID
-        VALUES (
-          @ID_PRODUCTO, @NO_PEDIDO,
-          @CANTIDAD_EXISTENCIA, @CANTIDAD_PEDIDA, @CANTIDAD_PENDIENTE
-        )
-      `);
+  if (!existe) {
+    existe = await createProduct(pool, transaction, producto);
   }
+
+  return await pool
+    .request(transaction)
+    .input("id_producto", sql.VarChar, producto.ID_PRODUCTO)
+    .input("NO_PEDIDO", sql.Int, no_pedido)
+    .input("CANTIDAD_EXISTENCIA", sql.VarChar, "0")
+    .input("CANTIDAD_PEDIDA", sql.Float, producto.CANTIDAD)
+    .input("CANTIDAD_PENDIENTE", sql.Float, producto.CANTIDAD)
+    .query(`
+      INSERT INTO PED_CLIEN_DETALLE (
+        ID_PRODUCTO, NO_PEDIDO,
+        CANTIDAD_EXISTENCIA, CANTIDAD_PEDIDA, CANTIDAD_PENDIENTE
+      )
+        OUTPUT INSERTED.ID
+      VALUES (
+        @ID_PRODUCTO, @NO_PEDIDO,
+        @CANTIDAD_EXISTENCIA, @CANTIDAD_PEDIDA, @CANTIDAD_PENDIENTE
+      )
+    `);
 };
 
 export const insertRequi = async (
